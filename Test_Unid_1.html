@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario: Test Unidad 1</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
+        h1 { text-align: center; color: #1a73e8; }
+        .form-group { margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        .question { background: #f9f9f9; padding: 15px; border-left: 4px solid #1a73e8; margin-bottom: 20px; border-radius: 4px; }
+        .question p { font-weight: bold; margin-bottom: 10px; }
+        .options label { display: block; background: #fff; padding: 8px 12px; margin-bottom: 6px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .options label:hover { background: #e8f0fe; }
+        .options input { margin-right: 10px; }
+        button { background-color: #1a73e8; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; }
+        button:hover { background-color: #1557b0; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 4px; display: none; text-align: center; font-size: 18px; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cuestionario: Test Unidad 1</h1>
+    
+    <div class="form-group">
+        <label for="studentName">Nombre y Apellidos del Alumno:</label>
+        <input type="text" id="studentName" placeholder="Escribe tu nombre completo" required>
+    </div>
+
+    <form id="quizForm">
+        <!-- Preguntas autogeneradas -->
+        <div id="questionsContainer"></div>
+        <button type="button" onclick="submitQuiz()">Enviar Cuestionario</button>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+// !!! SUSTITUYE ESTA URL POR LA DE TU APPS SCRIPT DE GOOGLE SHEETS !!!
+const GOOGLE_SCRIPT_URL = https://script.google.com/a/macros/g.educaand.es/s/AKfycbyx_zvcx8kDkkt8joPP_5ve2nD8i34aAZUu0k6elo8ynVk3nPT4QBzeM2-h8aSM900/exec
+;
+
+const quizData = [
+    {
+        q: "1. De qué elemento podemos decir que 'es la parte más importante del ordenador' y que 'se encarga de procesar los datos y realizar las operaciones aritmético-lógicas y de controlar el resto de los dispositivos'?",
+        a: ["a) Chipset", "b) Microprocesador", "c) Memoria RAM", "d) Memoria ROM"],
+        correct: 1
+    },
+    {
+        q: "2. ¿Cuál de las siguientes afirmaciones es falsa?",
+        a: ["a) Los puertos USB 2.0 alcanzan velocidades de hasta 60 MB/s.", "b) Los puertos USB 3.0 alcanzan velocidades de hasta 600 MB/s.", "c) Los puertos IEEE 1394 (Firewire o i.Link) alcanzan velocidades de hasta 400 Mbps.", "d) Todas son verdaderas."],
+        correct: 3
+    },
+    {
+        q: "3. Es una memoria de sólo lectura, no volátil, ya que la información no se pierde al apagar el ordenador:",
+        a: ["a) Memoria RAM", "b) Memoria ROM", "c) Memoria caché", "d) Memoria virtual"],
+        correct: 1
+    },
+    {
+        q: "4. Los discos que almacenan la información en microchips de memoria NAND no volátiles son:",
+        a: ["a) HDD", "b) SSD", "c) DVD", "d) Floppy disk"],
+        correct: 1
+    },
+    {
+        q: "5. La parte física del ordenador, es decir, tanto la caja y los componentes internos como los elementos conectados a él, es:",
+        a: ["a) El microprocesador", "b) El software", "c) El hardware", "d) Los periféricos"],
+        correct: 2
+    },
+    {
+        q: "6. ¿Cuál es el conector interno de un ordenador que tiene como objetivo los gráficos y la conectividad con una tasa de transferencia que puede alcanzar los 2 GB/s?",
+        a: ["a) PCI", "b) AGP", "c) IDE", "d) SATA"],
+        correct: 1
+    },
+    {
+        q: "7. ¿Cuál es el conector interno que es una interfaz de transmisión entre la placa base y algunos dispositivos, como el disco duro?",
+        a: ["a) AGP", "b) SATA", "c) IDE", "d) VGA"],
+        correct: 1
+    },
+    {
+        q: "8. Un mega byte son:",
+        a: ["a) 1.024 bytes", "b) 1.024 bits", "c) 1.024 Kb", "d) 1.024 KB"],
+        correct: 3
+    },
+    {
+        q: "9. Se encarga de realizar las comunicaciones entre el microprocesador y los distintos componentes conectados a la placa base...",
+        a: ["a) Microprocesador", "b) Chipset", "c) BIOS", "d) Memoria RAM"],
+        correct: 1
+    },
+    {
+        q: "10. El conector que nos permite la conexión a Internet es el:",
+        a: ["a) RJ-45", "b) VGA", "c) HDMI", "d) USB"],
+        correct: 0
+    },
+    {
+        q: "11. Es el soporte lógico del ordenador, que comprende el conjunto de los componentes lógicos que hacen posible su funcionamiento...",
+        a: ["a) Hardware", "b) Software", "c) BIOS", "d) Programas y aplicaciones"],
+        correct: 1
+    },
+    {
+        q: "12. Es un programa especial guardado en la pequeña memoria de la placa base, que una vez que se han inicializado los componentes hardware, toma el control...",
+        a: ["a) Software", "b) Sistema operativo", "c) Programa", "d) BIOS"],
+        correct: 3
+    },
+    {
+        q: "13. Son programas, dispuestos ya en el software o en la memoria fija, que hacen que el hardware sea utilizable...",
+        a: ["a) Sistemas operativos", "b) BIOS", "c) Memoria virtuales", "d) Aplicaciones"],
+        correct: 0
+    },
+    {
+        q: "14. No es una función del sistema operativo ...",
+        a: ["a) Permitir a los usuarios compartir el hardware.", "b) Permitir a los usuarios compartir datos.", "c) Permitir a los usuarios la planificación de recursos.", "d) Todas son funciones del sistema operativo."],
+        correct: 3
+    },
+    {
+        q: "15. Es un programa diseñado para facilitar un determinado tipo de trabajo:",
+        a: ["a) Sistema operativo", "b) Programa informático", "c) Aplicación informática", "d) Accesorio"],
+        correct: 2
+    },
+    {
+        q: "16. La BIOS (el software almacenado en la memoria ROM que hace que el ordenador arranque y funcione) es:",
+        a: ["a) Una aplicación", "b) Un programa", "c) Un sistema operativo", "d) Un conjunto de chips"],
+        correct: 1
+    },
+    {
+        q: "17. Un procesador de texto y un reproductor de vídeo son, técnicamente hablando:",
+        a: ["a) Programas", "b) Aplicaciones", "c) Sistemas operativos", "d) Conjuntos de chips"],
+        correct: 1
+    },
+    {
+        q: "18. LibreOffice Calc y Microsoft Excel son:",
+        a: ["a) Procesadores de texto", "b) Presentaciones de diapositivas", "c) Bases de datos", "d) Hojas de cálculo"],
+        correct: 3
+    },
+    {
+        q: "19. Se utilizan en Linux y son archivos comprimidos que permiten instalar, compilar, eliminar y actualizar las aplicaciones...",
+        a: ["a) Paquetes", "b) Aplicaciones", "c) Disparadores", "d) Distribuciones"],
+        correct: 0
+    },
+    {
+        q: "20. Existen varios sistemas de paquetes, pero los formatos más extendidos son:",
+        a: ["a) RPM y DEB", "b) RPM y STD", "c) DEB y STD", "d) STL y STD"],
+        correct: 0
+    },
+    {
+        q: "21. Desde el punto de vista lógico, los discos duros están formados por...",
+        a: ["a) La BIOS y un sector de arranque.", "b) Un sector de arranque y una o varias particiones.", "c) Los discos duros y la BIOS.", "d) Una o varias particiones y un sistema de ficheros."],
+        correct: 3
+    },
+    {
+        q: "22. El master boot record (MBR) o programa de inicialización se almacena en ...",
+        a: ["a) Un USB.", "b) La memoria RAM.", "c) El sistema operativo.", "d) El sector de arranque."],
+        correct: 3
+    },
+    {
+        q: "23. En el sector de arranque se almacenan ...",
+        a: ["a) La tabla de particiones y el MBR.", "b) La tabla de particiones y las aplicaciones.", "c) La tabla de particiones y todo el sistema operativo.", "d) El MBR y las aplicaciones."],
+        correct: 0
+    },
+    {
+        q: "24. Una razón para tener más de una partición en el disco duro es ...",
+        a: ["a) Poder crear particiones separadas para datos accesibles por distintos usuarios.", "b) Poder tener más de un sistema operativo en un mismo disco.", "c) Destinar una partición a la recuperación de fábrica del ordenador.", "d) Todas las anteriores respuestas son correctas."],
+        correct: 3
+    },
+    {
+        q: "25. El sistema de archivos es una estructura que permite tanto el almacenamiento de información... Esta operación se denomina ...",
+        a: ["a) Crear un nuevo archivo.", "b) Dar formato.", "c) Crear una partición extendida.", "d) Ninguna de las anteriores respuestas es correcta."],
+        correct: 1
+    },
+    {
+        q: "26. En los archivos se graban, además del nombre y la extensión ...",
+        a: ["a) Las fechas de creación y modificación y el último acceso.", "b) Sólo las fechas de creación.", "c) Las fechas de creación y modificación.", "d) Ninguna de las anteriores respuestas es correcta."],
+        correct: 0
+    },
+    {
+        q: "27. La posición exacta de un archivo o carpeta dentro de la estructura arborescente se denomina ...",
+        a: ["a) Directorio o carpeta", "b) Master boot record", "c) Extensión", "d) Ruta o path"],
+        correct: 3
+    },
+    {
+        q: "28. Es un condicionante del hardware y/o el software de un dispositivo móvil:",
+        a: ["a) Procesador de menor tamaño y bajo consumo.", "b) Incorporación de diferentes sensores, como GPS, acelerómetro, etc.", "c) Pantallas de menor tamaño capacitivas.", "d) Todas las anteriores."],
+        correct: 3
+    },
+    {
+        q: "29. Los sistemas operativos más utilizados en los dispositivos móviles son:",
+        a: ["a) Windows 10 y Android", "b) Windows 10 e iOS", "c) Android e iOS", "d) Windows y Linux"],
+        correct: 2
+    },
+    {
+        q: "30. Indica cuál de las siguientes afirmaciones es correcta:",
+        a: ["a) Android es un sistema operativo desarrollado por Microsoft...", "b) iOS es un sistema operativo desarrollado por Apple. Es de código abierto...", "c) Android es un sistema operativo desarrollado por Google. Está basado en Linux, es de código abierto y es el más extendido.", "d) Ninguna de las anteriores respuestas es correcta."],
+        correct: 2
+    }
+];
+
+// Cargar preguntas en el HTML
+const container = document.getElementById('questionsContainer');
+quizData.forEach((q, index) => {
+    let qHTML = `<div class="question"><p>${q.q}</p><div class="options">`;
+    q.a.forEach((opt, optIndex) => {
+        qHTML += `<label><input type="radio" name="q${index}" value="${optIndex}"> ${opt}</label>`;
+    });
+    qHTML += `</div></div>`;
+    container.innerHTML += qHTML;
+});
+
+// Control de intentos mediante localStorage
+let currentAttempt = parseInt(localStorage.getItem('quiz_test_u1_attempt') || '0') + 1;
+
+function submitQuiz() {
+    const name = document.getElementById('studentName').value.trim();
+    const resultDiv = document.getElementById('result');
+
+    if (!name) {
+        alert("Por favor, escribe tu nombre antes de enviar.");
+        return;
+    }
+
+    let score = 0;
+    quizData.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        if (selected && parseInt(selected.value) === q.correct) {
+            score++;
+        }
+    });
+
+    resultDiv.style.display = "block";
+    resultDiv.className = "success";
+    resultDiv.innerHTML = "Enviando resultados...";
+
+    const payload = {
+        nombre: name,
+        puntuacion: score,
+        total: quizData.length,
+        intento: currentAttempt
+    };
+
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        localStorage.setItem('quiz_test_u1_attempt', currentAttempt);
+        resultDiv.innerHTML = `¡Gracias, ${name}! Tu cuestionario ha sido enviado.<br>Puntuación: ${score} de ${quizData.length} (Intento nº ${currentAttempt})`;
+    })
+    .catch(error => {
+        resultDiv.className = "error";
+        resultDiv.innerHTML = "Ocurrió un error al enviar las respuestas. Inténtalo de nuevo.";
+        console.error("Error:", error);
+    });
+}
+</script>
+
+</body>
+</html>
